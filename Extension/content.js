@@ -21,7 +21,7 @@ function scanLinksInEmail() {
           link.title = "✔️ Safe link";
         }
       })
-      .catch(error => console.error("Error checking link:", error));
+      .catch(error => console.error("Error checkingx` link:", error));
     });
   }
   

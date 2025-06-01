@@ -1,45 +1,44 @@
 document.addEventListener("DOMContentLoaded", function () {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    var url = tabs[0].url;
-    document.getElementById("url-input").value = url;
-    checkPhishing(url, "check");
+    const url = tabs[0].url;
+    document.getElementById("url-input1").value = url;
+    analyzeEmailContent(url);
   });
 
-  document
-    .getElementById("url-form")
-    .addEventListener("submit", function (event) {
-      event.preventDefault();
-      var url = document.getElementById("url-input1").value;
-      checkPhishing(url, "result");
-    });
+  document.getElementById("url-form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    const url = document.getElementById("url-input1").value;
+    analyzeEmailContent(url);
+  });
 });
 
-function checkPhishing(url, classname) {
-  // Send request to machine learning API with the URL as the input
-  fetch(`http://127.0.0.1:8000/api?url=${url}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(data);
-      let test = data[0];
-      console.log(test);
-      console.log(typeof test);
-      var resultDiv = document.getElementsByClassName(classname)[0];
-      if (typeof test === "string") {
-        resultDiv.innerHTML = test;
-      } else {
-        resultDiv.innerHTML = data.msg;
-      }
+function analyzeEmailContent(url) {
+  // For demonstration, using placeholders for subject, body, and attachments
+  const emailData = {
+    subject: "Sample Subject",
+    body: "Sample email body containing potential threats.",
+    urls: [url],
+    attachment_filenames: ["invoice.exe"]
+  };
 
-      // if (test.includes("legitimate")) {
-      //   // resultDiv.color = "green";
-      // }
+  fetch("http://127.0.0.1:8000/api/analyze", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(emailData)
+  })
+    .then(response => response.json())
+    .then(data => {
+      const resultDiv = document.getElementsByClassName("result")[0];
+      resultDiv.innerHTML = `
+        <p><strong>LLM Analysis:</strong></p>
+        <p>${data.llm_analysis}</p>
+        <p><strong>Phishing URLs:</strong> ${data.phishing_urls.map(item => item.url).join(", ")}</p>
+        <p><strong>Suspicious Attachments:</strong> ${data.suspicious_attachments.join(", ")}</p>
+      `;
     })
-    .catch((error) => {
+    .catch(error => {
       console.error("Error:", error);
     });
 }
